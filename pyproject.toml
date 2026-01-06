@@ -1,0 +1,71 @@
+[project]
+name = "transcriber"
+version = "0.1.0"
+description = "A local, privacy-focused video transcription tool."
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    {name = "Daniel Collier", email = "danielfcollier@gmail.com"}
+]
+dependencies = [
+    "openai-whisper",
+    "tkinter-tooltip"
+]
+
+[project.scripts]
+transcriber-cli = "transcriber.cli:main"
+transcriber-gui = "transcriber.gui:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.1.0",
+    "mypy>=1.4.0",
+    "pytest>=7.4.0",
+    "pyinstaller>=6.0.0",
+]
+
+# --- Tool Configurations ---
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+exclude = [
+    ".venv",
+    ".git",
+    "__pycache__",
+    ".github",
+    "dist",
+    "build",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "C90", "UP"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 30
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+plugins = [] # pydantic.mypy removed as pydantic isn't a main dep here
+ignore_missing_imports = true
+check_untyped_defs = true
+namespace_packages = true
+
+# Use the lightweight CPU version of PyTorch by default (saves 2GB+)
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+torchvision = [{ index = "pytorch-cpu" }]
