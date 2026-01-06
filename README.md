@@ -26,7 +26,7 @@ graph LR
 *Best for: Friends, Journalists, and non-coders.*
 
 1. Go to the [download page](https://drive.google.com/file/d/1RVsaYc-SM303L5VLQdRsTm2I9G67an6o/view?usp=drive_link).
-2. Download the latest `AutoTranscriber.exe`.
+2. Download the latest `OpenTranscriber.exe`.
 3. Double-click to launch.
 
 ### Option 2: For Developers (Source Code) 👩‍💻
@@ -65,8 +65,8 @@ make build
 
 **3. Locate your App:**
 
-* **Windows:** `dist/AutoTranscriber.exe`
-* **Linux/Mac:** `dist/AutoTranscriber`
+* **Windows:** `dist/OpenTranscriber.exe`
+* **Linux/Mac:** `dist/OpenTranscriber`
 
 > **Mac Users:** If you see an "Unverified Developer" warning, right-click the file and select **Open** while holding the `Control` key.
 

@@ -8,7 +8,7 @@ from tkinter import filedialog, messagebox
 import whisper
 from whisper.utils import get_writer
 
-from . import setup_ffmpeg_path, setup_logging
+from transcriber import setup_ffmpeg_path, setup_logging
 
 logger = logging.getLogger(__name__)
 
@@ -16,15 +16,19 @@ logger = logging.getLogger(__name__)
 class TranscriberApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Auto Transcriber")
-        self.root.geometry("450x350")
+        self.root.title("Open Transcriber")
+        self.root.geometry("450x400")
+
+        self.output_dir = None
 
         # Setup UI
         self._setup_ui()
 
     def _setup_ui(self):
         # Header
-        self.label_title = tk.Label(self.root, text="AI Video Transcriber", font=("Helvetica", 16, "bold"))
+        self.label_title = tk.Label(
+            self.root, text="Audio and Video Transcription through AI", font=("Helvetica", 16, "bold")
+        )
         self.label_title.pack(pady=10)
 
         # File Selection
@@ -32,7 +36,12 @@ class TranscriberApp:
         self.label_file.pack(pady=5)
 
         self.btn_select = tk.Button(self.root, text="Select Media File", command=self.select_file, height=2, width=20)
-        self.btn_select.pack(pady=10)
+        self.btn_select.pack(pady=5)
+
+        self.btn_open = tk.Button(
+            self.root, text="📂 Open Output Folder", command=self.open_folder, state=tk.DISABLED, height=2, width=20
+        )
+        self.btn_open.pack(pady=5)
 
         # Status
         self.status_label = tk.Label(self.root, text="Ready", fg="blue")
@@ -67,7 +76,14 @@ class TranscriberApp:
         )
         if file_path:
             self.label_file.config(text=f"Selected: {os.path.basename(file_path)}")
+            # Reset button state on new selection
+            self.btn_open.config(state=tk.DISABLED)
             self.start_transcription(file_path)
+
+    def open_folder(self):
+        """Opens the output directory in the system file explorer."""
+        if self.output_dir and os.path.exists(self.output_dir):
+            webbrowser.open(self.output_dir)
 
     def start_transcription(self, file_path):
         """
@@ -95,18 +111,22 @@ class TranscriberApp:
             # 2. Transcribe
             self.update_status("Transcribing... (This takes time)", "purple")
             logger.info("Worker: Transcribing...")
-            result = model.transcriber(file_path, fp16=False)
+            result = model.transcribe(file_path, fp16=False)
 
             # 3. Save
-            output_dir = os.path.dirname(file_path)
-            writer = get_writer("srt", output_dir)
+            self.output_dir = os.path.dirname(file_path)
+            writer = get_writer("srt", self.output_dir)
             writer(result, file_path)
 
             logger.info("Worker: Success.")
             self.update_status("Done!", "green")
 
-            # Show success message on Main Thread
-            self.root.after(0, lambda: messagebox.showinfo("Success", f"Saved to:\n{output_dir}"))
+            # Success actions on Main Thread
+            def on_success():
+                self.btn_open.config(state=tk.NORMAL)  # Enable the button
+                messagebox.showinfo("Success", f"Saved to:\n{self.output_dir}")
+
+            self.root.after(0, on_success)
 
         except Exception as e:
             logger.error(f"Worker Error: {e}")
@@ -114,7 +134,7 @@ class TranscriberApp:
             self.root.after(0, lambda: messagebox.showerror("Error", str(e)))  # noqa
 
         finally:
-            # Re-enable button
+            # Re-enable select button
             self.root.after(0, lambda: self.btn_select.config(state=tk.NORMAL))
 
     def update_status(self, text, color):
