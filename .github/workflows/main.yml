@@ -73,7 +73,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install Dependencies
-        run: uv sync
+        run: uv sync --extra dev
 
       # 1. Restore FFmpeg from Cache
       - name: Cache FFmpeg
