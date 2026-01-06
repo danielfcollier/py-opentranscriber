@@ -25,7 +25,7 @@ graph LR
 
 *Best for: Friends, Journalists, and non-coders.*
 
-1. Go to the **[suspicious link removed]** page.
+1. Go to the [download page](https://drive.google.com/file/d/1RVsaYc-SM303L5VLQdRsTm2I9G67an6o/view?usp=drive_link).
 2. Download the latest `AutoTranscriber.exe`.
 3. Double-click to launch.
 
