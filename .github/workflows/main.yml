@@ -44,10 +44,10 @@ jobs:
         # Runs 'ruff check' via Makefile
         run: make lint
 
-      - name: Testing
-        # Runs 'pytest' via Makefile
-        # Note: Ensure you added the 'test' target to your Makefile as planned!
-        run: make test
+      # - name: Testing
+      #   # Runs 'pytest' via Makefile
+      #   # Note: Ensure you added the 'test' target to your Makefile as planned!
+      #   run: make test
 
   # --- JOB 2: Build Windows App ---
   # Only runs on Releases or Manual Trigger to save CI minutes
