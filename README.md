@@ -15,8 +15,8 @@ For non-technical users, here is the simple workflow:
 ```mermaid
 graph LR
     A[🎥 Video/Audio File] -->|Drag & Drop| B[🖥️ Transcriber App]
-    B -->|Processing| C{"🧠 AI Model\n(Local)"}
-    C -->|Output| D["📄 Subtitle File\n(.srt)"]
+    B -->|Processing| C{"🧠 AI Model (Local)"}
+    C -->|Output| D["📄 Subtitle File (.srt)"]
 ```
 
 ## 🚀 Installation & Usage
