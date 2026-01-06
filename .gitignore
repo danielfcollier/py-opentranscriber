@@ -9,4 +9,4 @@ wheels/
 # Virtual environments
 .venv
 ffmpeg*
-AutoTranscriber.spec
+OpenTranscriber.spec

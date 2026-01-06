@@ -105,8 +105,8 @@ build: ## Build the App (Auto-detects OS).
 	fi
 	@echo -e "$(YELLOW)>>> Building $(OS_NAME) App...$(NC)"
 	@$(UV) run pyinstaller --noconfirm --onefile --windowed \
-		--name "AutoTranscriber" \
-		--collect-all openai_whisper \
+		--name "OpenTranscriber" \
+		--collect-all whisper \
 		--add-binary "$(FFMPEG_BIN)$(PYINSTALLER_SEP)." \
 		src/transcriber/gui.py
-	@echo -e "$(GREEN)>>> Build Complete: $(DIST_DIR)/AutoTranscriber$(EXE_EXT)$(NC)"
+	@echo -e "$(GREEN)>>> Build Complete: $(DIST_DIR)/OpenTranscriber$(EXE_EXT)$(NC)"

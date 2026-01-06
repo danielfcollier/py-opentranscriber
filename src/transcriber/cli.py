@@ -6,7 +6,7 @@ import sys
 import whisper
 from whisper.utils import get_writer
 
-from . import setup_logging
+from transcriber import setup_logging
 
 logger = logging.getLogger(__name__)
 
