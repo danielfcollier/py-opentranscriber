@@ -1,0 +1,102 @@
+name: CI/CD
+
+on:
+  # Trigger 1: Quality Checks on every change
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  
+  # Trigger 2: Release Builds (Manual or Tag)
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  # --- JOB 1: Code Quality (Linux) ---
+  # Matches umik-base-app standards
+  quality:
+    name: Check & Test
+    runs-on: ubuntu-latest
+    env:
+      UV_CACHE_DIR: /tmp/.uv-cache
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        # This runs 'uv sync --extra dev' via the Makefile
+        run: make install
+
+      - name: Linting
+        # Runs 'ruff check' via Makefile
+        run: make lint
+
+      - name: Testing
+        # Runs 'pytest' via Makefile
+        # Note: Ensure you added the 'test' target to your Makefile as planned!
+        run: make test
+
+  # --- JOB 2: Build Windows App ---
+  # Only runs on Releases or Manual Trigger to save CI minutes
+  build-windows:
+    name: Build Windows Exe
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    needs: quality
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: uv sync
+
+      # 1. Restore FFmpeg from Cache
+      - name: Cache FFmpeg
+        id: cache-ffmpeg
+        uses: actions/cache@v4
+        with:
+          path: ffmpeg.exe  # or just 'ffmpeg' on Linux
+          # Create a unique key based on the OS
+          key: ${{ runner.os }}-ffmpeg-v1
+
+      # 2. Download ONLY if cache missed
+      - name: Download FFmpeg
+        if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
+        run: make download-ffmpeg
+
+      - name: Build Executable
+        # We run the command directly here because Makefiles can be tricky on Windows runners.
+        # --collect-all is crucial for Whisper to work packaged.
+        run: |
+          uv run pyinstaller --noconfirm --onefile --windowed --name "AutoTranscriber" --collect-all openai_whisper src/transcriber/gui.py
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-App
+          path: dist/AutoTranscriber.exe
