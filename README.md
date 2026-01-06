@@ -4,7 +4,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.12-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-**A local, privacy-focused video transcription tool.**
+**A local, privacy-focused transcription tool.**
 
 > **🕵️‍♀️ Privacy Note:** This tool runs **entirely on your computer**. No video or audio data is ever sent to the cloud. It is designed for journalists, researchers, and anyone working with sensitive interviews.
 
