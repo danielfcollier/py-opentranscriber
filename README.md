@@ -31,17 +31,17 @@ OpenTranscriber is a powerful desktop application built with Python and OpenAI's
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/danielfcollier/py-open-transcriber.git
-cd py-open-transcriber
+git clone https://github.com/danielfcollier/py-opentranscriber.git
+cd py-opentranscriber
 ```
 
-### 2. Install Dependencies (using `uv`)](https://github.com/danielfcollier/py-transcriber.git)
+### 2. Install Dependencies (using `uv`)
 
 We use [uv](https://github.com/astral-sh/uv) for fast package management.
 
 ```bash
 # Install uv if you don't have it
-curl -LsSf [https://astral.sh/uv/install.sh](https://astral.sh/uv/install.sh) | sh
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Sync dependencies
 uv sync
