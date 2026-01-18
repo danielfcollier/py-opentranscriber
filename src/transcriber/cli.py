@@ -29,7 +29,7 @@ def transcribe_media(file_path, model_type, output_format):
 
     logger.info(f"Transcribing '{file_path}'...")
     try:
-        result = model.transcriber(file_path, fp16=False)
+        result = model.transcribe(file_path, fp16=False)
     except Exception as e:
         logger.error(f"Transcription failed: {e}")
         sys.exit(1)
