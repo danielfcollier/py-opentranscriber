@@ -67,7 +67,6 @@ def main():
     try:
         transcribe_media(args.input_file, args.model, args.format)
     except Exception as e:
-        # The CLI is responsible for the exit code, not the logic function
         logger.critical(str(e))
         sys.exit(1)
 

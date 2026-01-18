@@ -8,8 +8,6 @@ from tkinter import filedialog, messagebox, ttk
 
 import pygame
 import whisper
-
-# We import this just to ensure the module is loaded in sys.modules
 import whisper.transcribe
 from whisper.utils import get_writer
 
@@ -54,7 +52,7 @@ class TranscriberApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Open Transcriber")
-        self.root.geometry("800x800")  # Wider for the editor
+        self.root.geometry("800x800")
 
         # State Variables
         self.output_dir = None
@@ -66,7 +64,7 @@ class TranscriberApp:
         self.current_page = 0
         self.PAGE_SIZE = 50
         self.audio_total_duration = 0
-        self.audio_start_offset = 0  # To track seek position
+        self.audio_start_offset = 0
         self.is_user_seeking = False
 
         # Threading
@@ -129,7 +127,6 @@ class TranscriberApp:
 
         # Progress Bar
         self.progress = ttk.Progressbar(self.root, orient="horizontal", length=400, mode="determinate")
-        # Hidden by default
 
         # Status
         self.status_label = tk.Label(self.root, text="Ready", fg="blue")
