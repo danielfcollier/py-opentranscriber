@@ -13,7 +13,7 @@ import whisper
 import whisper.transcribe
 from whisper.utils import get_writer
 
-from transcriber import setup_ffmpeg_path, setup_logging
+from opentranscriber import setup_ffmpeg_path, setup_logging
 
 logger = logging.getLogger(__name__)
 

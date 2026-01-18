@@ -1,5 +1,5 @@
 [project]
-name = "transcriber"
+name = "opentranscriber"
 version = "0.1.0"
 description = "A local, privacy-focused video transcription tool."
 readme = "README.md"
@@ -16,8 +16,8 @@ dependencies = [
 ]
 
 [project.scripts]
-transcriber-cli = "transcriber.cli:main"
-transcriber-gui = "transcriber.gui:main"
+opentranscriber-cli = "opentranscriber.cli:main"
+opentranscriber-gui = "opentranscriber.gui:main"
 
 [build-system]
 requires = ["hatchling"]

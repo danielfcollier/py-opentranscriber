@@ -1,5 +1,5 @@
 ################################################################################
-# Transcriber Project Makefile (Cross-Platform)
+# OpenTranscriber Project Makefile (Cross-Platform)
 ################################################################################
 
 SHELL := /bin/bash
@@ -10,7 +10,7 @@ PYTHON  := .venv/bin/python3
 UV      := uv
 
 # Directories
-SRC_DIR := src/transcriber
+SRC_DIR := src/opentranscriber
 DIST_DIR := dist
 BUILD_DIR := build
 
@@ -83,7 +83,7 @@ format: ## Format code.
 	@$(UV) run ruff check src --fix
 
 run-gui: ## Launch the GUI.
-	@$(UV) run transcriber-gui
+	@$(UV) run opentranscriber-gui
 
 # ==============================================================================
 # Cross-Platform Building
@@ -108,5 +108,5 @@ build: ## Build the App (Auto-detects OS).
 		--name "OpenTranscriber" \
 		--collect-all whisper \
 		--add-binary "$(FFMPEG_BIN)$(PYINSTALLER_SEP)." \
-		src/transcriber/gui.py
+		src/opentranscriber/gui.py
 	@echo -e "$(GREEN)>>> Build Complete: $(DIST_DIR)/OpenTranscriber$(EXE_EXT)$(NC)"

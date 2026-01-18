@@ -103,7 +103,7 @@ jobs:
         # We run the command directly here because Makefiles can be tricky on Windows runners.
         # --collect-all is crucial for Whisper to work packaged.
         run: |
-          uv run pyinstaller --noconfirm --onefile --windowed --name "OpenTranscriber" --collect-all whisper src/transcriber/gui.py
+          uv run pyinstaller --noconfirm --onefile --windowed --name "OpenTranscriber" --collect-all whisper src/opentranscriber/gui.py
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v6

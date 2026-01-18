@@ -458,6 +458,41 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/35/8e/d36f8880bcf18ec026a55807d02fe4c7357da9f25aebd92f85178000c0dc/openai_whisper-20250625.tar.gz", hash = "sha256:37a91a3921809d9f44748ffc73c0a55c9f366c85a3ef5c2ae0cc09540432eb96", size = 803191, upload-time = "2025-06-26T01:06:13.34Z" }
 
 [[package]]
+name = "opentranscriber"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "openai-whisper" },
+    { name = "pygame" },
+    { name = "tkinter-tooltip" },
+    { name = "torch", version = "2.9.1", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
+    { name = "torch", version = "2.9.1+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform != 'darwin'" },
+    { name = "urllib3" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "mypy" },
+    { name = "pyinstaller" },
+    { name = "pytest" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.4.0" },
+    { name = "openai-whisper" },
+    { name = "pygame", specifier = ">=2.6.1" },
+    { name = "pyinstaller", marker = "extra == 'dev'", specifier = ">=6.0.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
+    { name = "tkinter-tooltip" },
+    { name = "torch", specifier = ">=2.9.1", index = "https://download.pytorch.org/whl/cpu" },
+    { name = "urllib3", specifier = ">=2.6.3" },
+]
+provides-extras = ["dev"]
+
+[[package]]
 name = "packaging"
 version = "25.0"
 source = { registry = "https://pypi.org/simple" }
@@ -857,41 +892,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/a8/4b/29b4ef32e036bb34e
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d0/30/dc54f88dd4a2b5dc8a0279bdd7270e735851848b762aeb1c1184ed1f6b14/tqdm-4.67.1-py3-none-any.whl", hash = "sha256:26445eca388f82e72884e0d580d5464cd801a3ea01e63e5601bdff9ba6a48de2", size = 78540, upload-time = "2024-11-24T20:12:19.698Z" },
 ]
-
-[[package]]
-name = "transcriber"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "openai-whisper" },
-    { name = "pygame" },
-    { name = "tkinter-tooltip" },
-    { name = "torch", version = "2.9.1", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
-    { name = "torch", version = "2.9.1+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform != 'darwin'" },
-    { name = "urllib3" },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "mypy" },
-    { name = "pyinstaller" },
-    { name = "pytest" },
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.4.0" },
-    { name = "openai-whisper" },
-    { name = "pygame", specifier = ">=2.6.1" },
-    { name = "pyinstaller", marker = "extra == 'dev'", specifier = ">=6.0.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
-    { name = "tkinter-tooltip" },
-    { name = "torch", specifier = ">=2.9.1", index = "https://download.pytorch.org/whl/cpu" },
-    { name = "urllib3", specifier = ">=2.6.3" },
-]
-provides-extras = ["dev"]
 
 [[package]]
 name = "triton"
