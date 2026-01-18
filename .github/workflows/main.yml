@@ -44,6 +44,16 @@ jobs:
         # Runs 'ruff check' via Makefile
         run: make lint
 
+      - name: Security Scan (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: true
+          format: 'table'
+          # Fail the build if CRITICAL vulnerabilities are found
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+
       # - name: Testing
       #   # Runs 'pytest' via Makefile
       #   # Note: Ensure you added the 'test' target to your Makefile as planned!

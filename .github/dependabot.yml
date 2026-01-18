@@ -1,0 +1,18 @@
+version: 2
+updates:
+  # Maintain Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # Optional: Groups keep your PRs tidy
+    groups:
+      dependencies:
+        patterns:
+          - "*"
+
+  # Maintain GitHub Actions (e.g., checkout, setup-python)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
