@@ -41,10 +41,12 @@ class TranscriberApp:
         options_frame.pack(pady=5)
 
         tk.Label(options_frame, text="Model Size:").pack(side=tk.LEFT, padx=5)
-        
+
         # Dropdown for model selection
         models = ["tiny", "base", "small", "medium", "large"]
-        self.model_menu = ttk.Combobox(options_frame, textvariable=self.model_var, values=models, state="readonly", width=10)
+        self.model_menu = ttk.Combobox(
+            options_frame, textvariable=self.model_var, values=models, state="readonly", width=10
+        )
         self.model_menu.pack(side=tk.LEFT, padx=5)
 
         # --- File Selection ---
@@ -124,10 +126,10 @@ class TranscriberApp:
         self.btn_select.config(state=tk.DISABLED)
         self.btn_cancel.config(state=tk.NORMAL)
         self.model_menu.config(state="disabled")
-        
+
         self.cancel_event.clear()
         self.update_status("Starting worker thread...", "orange")
-        
+
         model_size = self.model_var.get()
         logger.info(f"Starting transcription thread for {file_path} with model {model_size}")
 
@@ -142,23 +144,26 @@ class TranscriberApp:
         Includes checks for cancellation flag.
         """
         try:
-            if self.cancel_event.is_set(): raise InterruptedError()
+            if self.cancel_event.is_set():
+                raise InterruptedError()
 
             # 1. Load Model
             self.update_status(f"Loading Model ({model_size})...", "blue")
             logger.info("Worker: Loading model...")
             model = whisper.load_model(model_size)
 
-            if self.cancel_event.is_set(): raise InterruptedError()
+            if self.cancel_event.is_set():
+                raise InterruptedError()
 
             # 2. Transcribe
             self.update_status("Transcribing... (This takes time)", "purple")
             logger.info("Worker: Transcribing...")
-            
+
             # Note: This specific call blocks the thread. We check cancel after it finishes.
             result = model.transcribe(file_path, fp16=False)
 
-            if self.cancel_event.is_set(): raise InterruptedError()
+            if self.cancel_event.is_set():
+                raise InterruptedError()
 
             # 3. Save
             self.output_dir = os.path.dirname(file_path)
@@ -179,11 +184,11 @@ class TranscriberApp:
         except InterruptedError:
             logger.warning("Worker: Transcription cancelled by user.")
             self.update_status("Cancelled", "red")
-            
+
         except Exception as e:
             logger.error(f"Worker Error: {e}")
             self.update_status("Error", "red")
-            self.root.after(0, lambda: messagebox.showerror("Error", str(e)))
+            self.root.after(0, lambda: messagebox.showerror("Error", str(e)))  # noqa
 
         finally:
             # Re-enable controls
@@ -191,7 +196,7 @@ class TranscriberApp:
                 self.btn_select.config(state=tk.NORMAL)
                 self.btn_cancel.config(state=tk.DISABLED)
                 self.model_menu.config(state="readonly")
-            
+
             self.root.after(0, reset_ui)
 
     def update_status(self, text, color):
