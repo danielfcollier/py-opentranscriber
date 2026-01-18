@@ -1,118 +1,120 @@
-# Transcriber 📝 🤖
+# 🎙️ OpenTranscriber
 
-[![Build Status](https://github.com/danielfcollier/py-transcriber/actions/workflows/main.yml/badge.svg)](https://github.com/danielfcollier/py-transcriber/actions)
-[![Python Version](https://img.shields.io/badge/python-3.12-blue.svg)](https://python.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+> **A private, offline, and open-source audio/video transcription tool.**
 
-**A local, privacy-focused transcription tool.**
+OpenTranscriber is a powerful desktop application built with Python and OpenAI's **Whisper** technology. It allows you to transcribe video and audio files locally on your machine—ensuring your data never leaves your computer.
 
-> **🕵️‍♀️ Privacy Note:** This tool runs **entirely on your computer**. No video or audio data is ever sent to the cloud. It is designed for journalists, researchers, and anyone working with sensitive interviews.
+![License](https://img.shields.io/github/license/danielfcollier/py-transcriber)
+![Python](https://img.shields.io/badge/python-3.12+-blue.svg)
+![Status](https://img.shields.io/badge/status-active-success.svg)
 
-## 🌟 How It Works
+## ✨ Features
 
-For non-technical users, here is the simple workflow:
+* **🔒 100% Privacy:** Runs entirely offline. No data is sent to the cloud.
+* **🧠 AI-Powered:** Uses OpenAI's state-of-the-art **Whisper** models (Tiny, Base, Small, Medium, Large).
+* **🎞️ Media Support:** Works with MP4, MP3, WAV, MKV, FLAC, OGG, and M4A.
+* **📝 Built-in Editor:**
+    * **Live Preview:** Listen to the audio while editing segments.
+    * **Pagination:** Handle large files smoothly without freezing.
+    * **Timeline Seeking:** Click and drag to jump to specific parts of the audio.
+* **⚙️ Formats:** Export to **SRT** (Subtitles) or **TXT** (Plain Text).
+* **💻 Cross-Platform:** Designed for Windows, Linux, and macOS.
 
-```mermaid
-graph LR
-    A[🎥 Video/Audio File] -->|Drag & Drop| B[🖥️ Transcriber App]
-    B -->|Processing| C{"🧠 AI Model (Local)"}
-    C -->|Output| D["📄 Subtitle File (.srt)"]
+## 🚀 Installation
+
+### Prerequisites
+* **Python 3.12+**
+* **FFmpeg** (Required for audio processing)
+    * *Linux:* `sudo apt install ffmpeg`
+    * *Mac:* `brew install ffmpeg`
+    * *Windows:* Download from [ffmpeg.org](https://ffmpeg.org/download.html) (or use `choco install ffmpeg`).
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/danielfcollier/py-open-transcriber.git
+cd py-open-transcriber
 ```
 
-## 🚀 Installation & Usage
+### 2. Install Dependencies (using `uv`)](https://github.com/danielfcollier/py-transcriber.git)
 
-### Option 1: For End Users (Windows) 🏁
-
-*Best for: Friends, Journalists, and non-coders.*
-
-1. Go to the [download page](https://drive.google.com/file/d/1RVsaYc-SM303L5VLQdRsTm2I9G67an6o/view?usp=drive_link).
-2. Download the latest `OpenTranscriber.exe`.
-3. Double-click to launch.
-
-### Option 2: For Developers (Source Code) 👩‍💻
-
-*Best for: Modifying the code or building for Linux/Mac.*
-
-This project uses `uv` for fast dependency management and a smart `Makefile` for cross-platform builds.
+We use [uv](https://github.com/astral-sh/uv) for fast package management.
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/danielfcollier/py-transcriber.git
-cd py-transcriber
+# Install uv if you don't have it
+curl -LsSf [https://astral.sh/uv/install.sh](https://astral.sh/uv/install.sh) | sh
 
-# 2. Install dependencies (creates .venv automatically)
-make install
+# Sync dependencies
+uv sync
+```
 
-# 3. Run the GUI immediately
+## 🖥️ Usage
+
+You can run the application in two modes: **GUI (Graphic Interface)** or **CLI (Command Line)**.
+
+### 🎨 Graphical Interface (Recommended)
+
+Launch the visual tool to select files, choose models, and edit transcripts.
+
+```bash
 make run-gui
+# OR
+uv run opentranscriber-gui
 ```
 
-## 🛠️ Building the Standalone App
+**How to use:**
 
-You can package this tool into a single file (like an `.exe` or Linux binary) to share with friends. The `Makefile` automatically detects your OS (Windows, Linux, or Mac) and downloads the correct FFmpeg version to bundle inside.
+1. Click **Select Media File**.
+2. Choose the **Model Size** (Base is fast, Large is accurate).
+3. Click **Start Transcription**.
+4. Once finished, the **Editor** will open.
+5. Play the audio, correct the text, and click **Save & Finish**.
 
-**1. Download FFmpeg (Automated):**
+### ⌨️ Command Line Interface
+
+For automation or headless servers.
 
 ```bash
-make download-ffmpeg
+make run-cli input_file="video.mp4"
+# OR
+uv run opentranscriber-cli "video.mp4" --model small --format srt
 ```
 
-**2. Build the App:**
+**Arguments:**
+
+* `input_file`: Path to the file.
+* `--model`: `tiny`, `base`, `small`, `medium`, `large` (default: base).
+* `--format`: `srt` or `txt` (default: srt).
+
+## 🛠️ Development
+
+### Project Structure
+
+```text
+src/transcriber/
+├── gui.py       # Main GUI application (Tkinter)
+├── cli.py       # Command Line Interface logic
+├── __main__.py  # Entry point
+└── ...
+```
+
+### Running Tests and Linters
 
 ```bash
-make build
+# Run Linting (Ruff)
+make lint
+
+# Run Security Scan (Trivy)
+trivy fs .
 ```
 
-**3. Locate your App:**
+## ☕ Support
 
-* **Windows:** `dist/OpenTranscriber.exe`
-* **Linux/Mac:** `dist/OpenTranscriber`
+If this tool saved you time, consider buying me a coffee!
 
-> **Mac Users:** If you see an "Unverified Developer" warning, right-click the file and select **Open** while holding the `Control` key.
+* **🇧🇷 Brazilians (Pix):** [LivePix](https://livepix.gg/danielcollier)
+* **🌍 International:** [BuyMeACoffee](https://www.buymeacoffee.com/danielcollier)
 
-## 💻 CLI Usage
-
-For power users who want to script their workflow:
-
-```bash
-# Basic usage (defaults to 'base' model and 'srt' format)
-uv run transcriber-cli "interview_recording.mp4"
-
-# High accuracy mode (slower)
-uv run transcriber-cli "interview_recording.mp4" --model large
-
-# Export as plain text instead of subtitles
-uv run transcriber-cli "meeting.wav" --format txt
-```
-
-## 🧠 Model Guide
-
-Balance speed versus accuracy by choosing the right model size.
-
-| Model | Speed | Accuracy | Memory (VRAM) | Recommended For |
-| --- | --- | --- | --- | --- |
-| **tiny** | ⚡ Very Fast | Low | ~1 GB | Quick checks, clear English audio. |
-| **base** | 🐇 Fast | Decent | ~1 GB | **Default.** Good balance for most uses. |
-| **small** | 🐢 Moderate | Good | ~2 GB | Non-English audio or accents. |
-| **medium** | 🐌 Slow | Very Good | ~5 GB | High quality publishing. |
-| **large** | 🦥 Very Slow | Best | ~10 GB | Professional transcription / difficult audio. |
-
-## 👤 Author
-
-**Daniel Collier**
-
-* Staff Platform Engineer & Open Source Enthusiast
-* [LinkedIn Profile](https://www.linkedin.com/in/danielfcollier/)
-
-## 🤝 Contributing
-
-We use `make` to automate development tasks.
-
-* `make install`: Install dependencies.
-* `make lint`: Check code style with Ruff.
-* `make format`: Auto-format code.
-* `make build`: Generate the standalone app for your OS.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](.LICENSE.md) file for details.
+This project is licensed under the **MIT License**. See the `LICENSE` file for details.
