@@ -88,7 +88,7 @@ class TranscriberApp:
 
         # Header
         tk.Label(
-            self.root, text="OpenTranscriber: Audio and Video Transcription through AI", font=("Helvetica", 16, "bold")
+            self.root, text="Audio and Video Transcription through AI", font=("Helvetica", 16, "bold")
         ).pack(pady=10)
 
         # Options
