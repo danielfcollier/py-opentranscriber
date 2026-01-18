@@ -14,25 +14,24 @@ logger = logging.getLogger(__name__)
 def transcribe_media(file_path, model_type, output_format):
     """
     Core transcription logic.
+    Raises exceptions on failure instead of exiting directly.
     """
     if not os.path.exists(file_path):
-        logger.error(f"File not found: {file_path}")
-        sys.exit(1)
+        raise FileNotFoundError(f"File not found: {file_path}")
 
     logger.info(f"Loading Whisper model: {model_type}...")
     try:
         # fp16=False is safer for CPU usage to avoid warnings
         model = whisper.load_model(model_type)
     except Exception as e:
-        logger.critical(f"Failed to load model: {e}")
-        sys.exit(1)
+        raise RuntimeError(f"Failed to load model: {e}") from e
 
     logger.info(f"Transcribing '{file_path}'...")
     try:
+        # Note: fp16=False is crucial for CPU execution
         result = model.transcribe(file_path, fp16=False)
     except Exception as e:
-        logger.error(f"Transcription failed: {e}")
-        sys.exit(1)
+        raise RuntimeError(f"Transcription failed: {e}") from e
 
     output_directory = os.path.dirname(file_path) or "."
     logger.info(f"Saving output as {output_format.upper()}...")
@@ -42,7 +41,7 @@ def transcribe_media(file_path, model_type, output_format):
         writer(result, file_path)
         logger.info(f"Success! Output saved to: {os.path.abspath(output_directory)}")
     except Exception as e:
-        logger.error(f"Failed to save file: {e}")
+        raise RuntimeError(f"Failed to save file: {e}") from e
 
 
 def main():
@@ -64,7 +63,13 @@ def main():
     )
 
     args = parser.parse_args()
-    transcribe_media(args.input_file, args.model, args.format)
+
+    try:
+        transcribe_media(args.input_file, args.model, args.format)
+    except Exception as e:
+        # The CLI is responsible for the exit code, not the logic function
+        logger.critical(str(e))
+        sys.exit(1)
 
 
 if __name__ == "__main__":
