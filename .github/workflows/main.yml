@@ -106,7 +106,7 @@ jobs:
           uv run pyinstaller --noconfirm --onefile --windowed --name "OpenTranscriber" --collect-all whisper src/transcriber/gui.py
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Windows-App
           path: dist/OpenTranscriber.exe
