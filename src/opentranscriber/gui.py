@@ -87,9 +87,9 @@ class TranscriberApp:
         self._clear_window()
 
         # Header
-        tk.Label(
-            self.root, text="Audio and Video Transcription through AI", font=("Helvetica", 16, "bold")
-        ).pack(pady=10)
+        tk.Label(self.root, text="Audio and Video Transcription through AI", font=("Helvetica", 16, "bold")).pack(
+            pady=10
+        )
 
         # Options
         options_frame = tk.Frame(self.root)
