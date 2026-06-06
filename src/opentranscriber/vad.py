@@ -1,4 +1,5 @@
 """Voice Activity Detection pre-processing for opentranscriber."""
+
 from __future__ import annotations
 
 import json
@@ -230,10 +231,7 @@ def save_checkpoint(
         "input_file": file_path,
         "total_chunks": len(all_chunks),
         "vad_chunks": [{"start": c.start, "end": c.end} for c in all_chunks],
-        "completed": [
-            {"index": i, "offset": offset, "result": result}
-            for i, (result, offset) in enumerate(completed)
-        ],
+        "completed": [{"index": i, "offset": offset, "result": result} for i, (result, offset) in enumerate(completed)],
     }
     tmp = ckpt_path.with_suffix(".tmp")
     tmp.write_text(json.dumps(data, ensure_ascii=False, cls=_NumpyEncoder), encoding="utf-8")

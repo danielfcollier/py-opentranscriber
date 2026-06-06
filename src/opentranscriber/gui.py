@@ -431,7 +431,12 @@ class TranscriberApp:
 
     def _run_with_vad(self, file_path, model_size):
         """Transcribe using VAD-based chunking; supports checkpoint resume."""
-        from opentranscriber.vad import checkpoint_path, merge_chunk_results, resume_or_detect_and_chunk, save_checkpoint
+        from opentranscriber.vad import (
+            checkpoint_path,
+            merge_chunk_results,
+            resume_or_detect_and_chunk,
+            save_checkpoint,
+        )
 
         ckpt = checkpoint_path(file_path)
         self._active_checkpoint = ckpt

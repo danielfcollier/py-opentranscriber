@@ -1,8 +1,7 @@
 import logging
 import os
 from enum import Enum
-from importlib.metadata import PackageNotFoundError
-from importlib.metadata import version as pkg_version
+from importlib.metadata import PackageNotFoundError, version as pkg_version
 from pathlib import Path
 from typing import Annotated
 
@@ -48,8 +47,13 @@ def _version_callback(value: bool) -> None:
 InputFileArg = Annotated[Path, typer.Argument(help="Path to the audio/video file")]
 ModelOption = Annotated[ModelSize, typer.Option("--model", "-m", help="Whisper model size (default: base)")]
 FormatOption = Annotated[OutputFormat, typer.Option("--format", "-f", help="Output format (default: srt)")]
-VadOption = Annotated[bool, typer.Option("--vad/--no-vad", help="Voice Activity Detection (filters silence before transcription)")]
-VersionOption = Annotated[bool | None, typer.Option("--version", "-v", callback=_version_callback, is_eager=True, help="Show version and exit.")]
+VadOption = Annotated[
+    bool, typer.Option("--vad/--no-vad", help="Voice Activity Detection (filters silence before transcription)")
+]
+VersionOption = Annotated[
+    bool | None,
+    typer.Option("--version", "-v", callback=_version_callback, is_eager=True, help="Show version and exit."),
+]
 
 main = typer.Typer(
     help="Local, privacy-focused audio/video transcription powered by Whisper.",
