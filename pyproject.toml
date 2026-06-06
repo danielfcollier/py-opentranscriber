@@ -15,7 +15,7 @@ dependencies = [
     "torch>=2.9.1",
     "torchaudio==2.9.1",
     "typer>=0.9.0",
-    "urllib3>=2.6.3",
+    "urllib3>=2.7.0",
 ]
 
 [project.scripts]
