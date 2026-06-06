@@ -70,10 +70,12 @@ class TranscriberApp:
         # Threading
         self.cancel_event = threading.Event()
         self.worker_thread = None
+        self._active_checkpoint = None
 
         # Config
         self.model_var = tk.StringVar(value="base")
         self.format_var = tk.StringVar(value="srt")
+        self.use_vad = tk.BooleanVar(value=True)
 
         # Start with the Main Menu
         self.setup_main_menu()
@@ -108,6 +110,16 @@ class TranscriberApp:
             options_frame, textvariable=self.format_var, values=["srt", "txt"], state="readonly", width=6
         )
         self.format_menu.pack(side=tk.LEFT, padx=5)
+
+        # VAD Option
+        vad_frame = tk.Frame(self.root)
+        vad_frame.pack(pady=2)
+        self.vad_check = ttk.Checkbutton(
+            vad_frame,
+            text="Enable Voice Activity Detection (recommended for long files)",
+            variable=self.use_vad,
+        )
+        self.vad_check.pack()
 
         # File Selection
         self.label_file = tk.Label(self.root, text="No file selected", fg="gray", wraplength=400)
@@ -359,6 +371,7 @@ class TranscriberApp:
         self.btn_cancel.config(state=tk.NORMAL)
         self.model_menu.config(state="disabled")
         self.format_menu.config(state="disabled")
+        self.vad_check.config(state="disabled")
 
         # Setup Progress Bar
         self.progress.pack(pady=5, before=self.status_label)
@@ -388,31 +401,10 @@ class TranscriberApp:
             if self.cancel_event.is_set():
                 raise InterruptedError()
 
-            self.update_status(f"Loading Model ({model_size})...", "blue")
-            logger.info("Worker: Loading model...")
-            model = whisper.load_model(model_size)
-
-            if self.cancel_event.is_set():
-                raise InterruptedError()
-
-            self.update_status("Transcribing...", "purple")
-            logger.info("Worker: Transcribing...")
-
-            # --- MONKEY PATCH START ---
-            TkinterTqdm.on_progress_callback = self._update_progress_bar
-            transcribe_module = sys.modules["whisper.transcribe"]
-            original_tqdm = transcribe_module.tqdm
-
-            if hasattr(original_tqdm, "tqdm"):
-                transcribe_module.tqdm = TqdmShim
+            if self.use_vad.get():
+                result = self._run_with_vad(file_path, model_size)
             else:
-                transcribe_module.tqdm = TkinterTqdm
-
-            try:
-                result = model.transcribe(file_path, fp16=False)
-            finally:
-                transcribe_module.tqdm = original_tqdm
-            # --- MONKEY PATCH END ---
+                result = self._run_full_file(file_path, model_size)
 
             if self.cancel_event.is_set():
                 raise InterruptedError()
@@ -424,13 +416,88 @@ class TranscriberApp:
             self.root.after(0, self.setup_editor_ui)
 
         except InterruptedError:
-            self.update_status("Cancelled", "red")
+            ckpt = self._active_checkpoint
+            if ckpt is not None and ckpt.exists():
+                self.update_status("Cancelled — re-open the file to resume.", "orange")
+            else:
+                self.update_status("Cancelled", "red")
+            self._active_checkpoint = None
             self.root.after(0, self._reset_main_ui)
         except Exception as e:
             logger.error(f"Worker Error: {e}")
             self.update_status("Error", "red")
             self.root.after(0, lambda: messagebox.showerror("Error", str(e)))  # noqa
             self.root.after(0, self._reset_main_ui)
+
+    def _run_with_vad(self, file_path, model_size):
+        """Transcribe using VAD-based chunking; supports checkpoint resume."""
+        from opentranscriber.vad import checkpoint_path, merge_chunk_results, resume_or_detect_and_chunk, save_checkpoint
+
+        ckpt = checkpoint_path(file_path)
+        self._active_checkpoint = ckpt
+        self.update_status("Analyzing audio (VAD)...", "blue")
+        logger.info("Worker: Running VAD / checkpoint check...")
+        _, chunks, chunk_results = resume_or_detect_and_chunk(file_path, ckpt)
+
+        if self.cancel_event.is_set():
+            raise InterruptedError()
+
+        start_idx = len(chunk_results)
+        if start_idx > 0:
+            self.update_status(f"Resuming from chunk {start_idx + 1}/{len(chunks)}...", "orange")
+
+        self.update_status(f"Loading Model ({model_size})...", "blue")
+        logger.info("Worker: Loading model...")
+        model = whisper.load_model(model_size)
+
+        if self.cancel_event.is_set():
+            raise InterruptedError()
+
+        for i, chunk in enumerate(chunks[start_idx:], start_idx):
+            if self.cancel_event.is_set():
+                raise InterruptedError()
+
+            status = f"Transcribing chunk {i + 1}/{len(chunks)}..."
+            self.update_status(status, "purple")
+            logger.info("Worker: %s [%.1f s–%.1f s]", status, chunk.start, chunk.end)
+
+            r = model.transcribe(chunk.audio, fp16=False)
+            chunk_results.append((r, chunk.start))
+            save_checkpoint(ckpt, file_path, chunks, chunk_results)
+
+            pct = int((i + 1) / len(chunks) * 100)
+            self.root.after(0, lambda p=pct: self.progress.config(value=p))
+
+        ckpt.unlink(missing_ok=True)
+        return merge_chunk_results(chunk_results)
+
+    def _run_full_file(self, file_path, model_size):
+        """Transcribe the entire file at once (original behaviour)."""
+        self.update_status(f"Loading Model ({model_size})...", "blue")
+        logger.info("Worker: Loading model...")
+        model = whisper.load_model(model_size)
+
+        if self.cancel_event.is_set():
+            raise InterruptedError()
+
+        self.update_status("Transcribing...", "purple")
+        logger.info("Worker: Transcribing...")
+
+        # --- MONKEY PATCH START ---
+        TkinterTqdm.on_progress_callback = self._update_progress_bar
+        transcribe_module = sys.modules["whisper.transcribe"]
+        original_tqdm = transcribe_module.tqdm
+
+        if hasattr(original_tqdm, "tqdm"):
+            transcribe_module.tqdm = TqdmShim
+        else:
+            transcribe_module.tqdm = TkinterTqdm
+
+        try:
+            return model.transcribe(file_path, fp16=False)
+        finally:
+            transcribe_module.tqdm = original_tqdm
+        # --- MONKEY PATCH END ---
 
     # =========================================================================
     # Helpers & Saving
@@ -466,6 +533,7 @@ class TranscriberApp:
             self.btn_cancel.config(state=tk.DISABLED)
             self.model_menu.config(state="readonly")
             self.format_menu.config(state="readonly")
+            self.vad_check.config(state="normal")
         except Exception:
             pass
 
