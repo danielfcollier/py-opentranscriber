@@ -107,6 +107,7 @@ build: ## Build the App (Auto-detects OS).
 	@$(UV) run pyinstaller --noconfirm --onefile --windowed \
 		--name "OpenTranscriber" \
 		--collect-all whisper \
+		--collect-all silero_vad \
 		--add-binary "$(FFMPEG_BIN)$(PYINSTALLER_SEP)." \
 		src/opentranscriber/gui.py
 	@echo -e "$(GREEN)>>> Build Complete: $(DIST_DIR)/OpenTranscriber$(EXE_EXT)$(NC)"
