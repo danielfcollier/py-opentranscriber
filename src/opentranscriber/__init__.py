@@ -3,22 +3,39 @@ import os
 import sys
 
 
+class _NullWriter:
+    """A no-op stream, used to stand in for a missing console stream."""
+
+    def write(self, *args, **kwargs):
+        pass
+
+    def flush(self):
+        pass
+
+
+def setup_streams():
+    """
+    In a --windowed build, sys.stdout/sys.stderr are None (no attached
+    console). Anything that writes to them directly — print(), the
+    `warnings` module, tqdm — would crash with AttributeError. Standing in
+    a no-op stream fixes all of those at once, not just our own logging.
+    """
+    if sys.stdout is None:
+        sys.stdout = _NullWriter()
+    if sys.stderr is None:
+        sys.stderr = _NullWriter()
+
+
 def setup_logging(level=logging.INFO):
     """
     Configures the root logger with a professional format.
-
-    Falls back to NullHandler when running as a --windowed build, where
-    sys.stdout/sys.stderr are None (no attached console) and would make any
-    log call raise AttributeError.
     """
+    setup_streams()
+
     root_logger = logging.getLogger()
     root_logger.setLevel(level)
 
     if root_logger.handlers:
-        return
-
-    if sys.stdout is None:
-        root_logger.addHandler(logging.NullHandler())
         return
 
     handler = logging.StreamHandler(sys.stdout)
