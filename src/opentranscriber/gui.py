@@ -99,9 +99,9 @@ class TranscriberApp:
         self.model_menu = ttk.Combobox(
             options_frame,
             textvariable=self.model_var,
-            values=["tiny", "base", "small"],
+            values=whisper.available_models(),
             state="readonly",
-            width=10,
+            width=14,
         )
         self.model_menu.pack(side=tk.LEFT, padx=5)
 
