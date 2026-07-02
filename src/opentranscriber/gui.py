@@ -1,6 +1,8 @@
 import logging
 import os
+import subprocess
 import sys
+import tempfile
 import threading
 import tkinter as tk
 import webbrowser
@@ -11,9 +13,13 @@ import whisper
 import whisper.transcribe
 from whisper.utils import get_writer
 
-from opentranscriber import setup_ffmpeg_path, setup_logging
+from opentranscriber import setup_ffmpeg_path, setup_logging, suppress_ffmpeg_console
 
 logger = logging.getLogger(__name__)
+
+# Formats pygame's SDL2_mixer backend can play natively; anything else needs
+# transcoding before it can be used for editor playback/scrubbing.
+PYGAME_NATIVE_AUDIO_EXTS = {".wav", ".ogg", ".mp3", ".flac"}
 
 
 class TkinterTqdm:
@@ -59,6 +65,7 @@ class TranscriberApp:
         self.audio_path = None
         self.transcription_result = None
         self.segment_widgets = []
+        self._playback_temp_path = None
 
         # Pagination & Audio State
         self.current_page = 0
@@ -96,10 +103,13 @@ class TranscriberApp:
         options_frame.pack(pady=5)
 
         tk.Label(options_frame, text="Model Size:").pack(side=tk.LEFT, padx=5)
+        # English-only ".en" variants are excluded: they skip language detection
+        # and only help for English audio, which isn't this app's use case.
+        multilingual_models = [m for m in whisper.available_models() if not m.endswith(".en")]
         self.model_menu = ttk.Combobox(
             options_frame,
             textvariable=self.model_var,
-            values=whisper.available_models(),
+            values=multilingual_models,
             state="readonly",
             width=14,
         )
@@ -245,7 +255,8 @@ class TranscriberApp:
         # 3. Initialize Audio
         try:
             pygame.mixer.init()
-            pygame.mixer.music.load(self.audio_path)
+            playback_path = self._prepare_playback_audio(self.audio_path)
+            pygame.mixer.music.load(playback_path)
             self.update_slider_loop()  # Start the UI updater
         except Exception as e:
             messagebox.showwarning("Audio Error", f"Could not load audio: {e}")
@@ -316,6 +327,27 @@ class TranscriberApp:
         if self.current_page > 0:
             self.current_page -= 1
             self.render_page()
+
+    def _prepare_playback_audio(self, path):
+        """Return a path pygame's mixer can load, transcoding via ffmpeg if needed.
+
+        pygame's SDL2_mixer backend only plays wav/ogg/mp3/flac natively, so
+        m4a/mp4/mkv sources are transcoded to a temp wav for editor playback.
+        The original file is left untouched (used for saving results).
+        """
+        if os.path.splitext(path)[1].lower() in PYGAME_NATIVE_AUDIO_EXTS:
+            return path
+
+        fd, tmp_path = tempfile.mkstemp(suffix=".wav")
+        os.close(fd)
+        subprocess.run(
+            ["ffmpeg", "-y", "-i", path, "-vn", tmp_path],
+            check=True,
+            capture_output=True,
+            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+        )
+        self._playback_temp_path = tmp_path
+        return tmp_path
 
     # =========================================================================
     # Audio Logic: Seeking & Updates
@@ -429,6 +461,20 @@ class TranscriberApp:
             self.root.after(0, lambda: messagebox.showerror("Error", str(e)))  # noqa
             self.root.after(0, self._reset_main_ui)
 
+    def _announce_model_loading(self, model_size):
+        """Warn the user when a model isn't cached yet: it can take a while to
+        download (several GB for medium/large) and the UI would otherwise
+        look frozen on "Loading Model..." with no explanation."""
+        default_cache = os.path.join(os.path.expanduser("~"), ".cache")
+        cache_dir = os.path.join(os.getenv("XDG_CACHE_HOME", default_cache), "whisper")
+        url = whisper._MODELS.get(model_size)
+        is_cached = url is not None and os.path.isfile(os.path.join(cache_dir, os.path.basename(url)))
+
+        if is_cached:
+            self.update_status(f"Loading Model ({model_size})...", "blue")
+        else:
+            self.update_status(f"Downloading Model ({model_size})... this may take a while", "orange")
+
     def _run_with_vad(self, file_path, model_size):
         """Transcribe using VAD-based chunking; supports checkpoint resume."""
         from opentranscriber.vad import (
@@ -451,7 +497,7 @@ class TranscriberApp:
         if start_idx > 0:
             self.update_status(f"Resuming from chunk {start_idx + 1}/{len(chunks)}...", "orange")
 
-        self.update_status(f"Loading Model ({model_size})...", "blue")
+        self._announce_model_loading(model_size)
         logger.info("Worker: Loading model...")
         model = whisper.load_model(model_size)
 
@@ -478,7 +524,7 @@ class TranscriberApp:
 
     def _run_full_file(self, file_path, model_size):
         """Transcribe the entire file at once (original behaviour)."""
-        self.update_status(f"Loading Model ({model_size})...", "blue")
+        self._announce_model_loading(model_size)
         logger.info("Worker: Loading model...")
         model = whisper.load_model(model_size)
 
@@ -522,10 +568,19 @@ class TranscriberApp:
 
             pygame.mixer.music.stop()
             pygame.mixer.quit()
+            self._cleanup_playback_audio()
             self.setup_main_menu()
 
         except Exception as e:
             messagebox.showerror("Save Error", str(e))
+
+    def _cleanup_playback_audio(self):
+        if self._playback_temp_path:
+            try:
+                os.remove(self._playback_temp_path)
+            except OSError:
+                pass
+            self._playback_temp_path = None
 
     def _clear_window(self):
         for widget in self.root.winfo_children():
@@ -560,6 +615,7 @@ class TranscriberApp:
 def main():
     setup_logging()
     setup_ffmpeg_path()
+    suppress_ffmpeg_console()
     root = tk.Tk()
     TranscriberApp(root)
     root.mainloop()

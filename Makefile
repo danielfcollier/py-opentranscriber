@@ -104,10 +104,12 @@ build: ## Build the App (Auto-detects OS).
 		exit 1; \
 	fi
 	@echo -e "$(YELLOW)>>> Building $(OS_NAME) App...$(NC)"
-	@$(UV) run pyinstaller --noconfirm --onefile --windowed \
+	@# --onedir (not --onefile): avoids extracting to a temp dir on every
+	@# launch, which is both slow and a common trigger for AV false positives.
+	@$(UV) run pyinstaller --noconfirm --onedir --windowed \
 		--name "OpenTranscriber" \
 		--collect-all whisper \
 		--collect-all silero_vad \
 		--add-binary "$(FFMPEG_BIN)$(PYINSTALLER_SEP)." \
 		src/opentranscriber/gui.py
-	@echo -e "$(GREEN)>>> Build Complete: $(DIST_DIR)/OpenTranscriber$(EXE_EXT)$(NC)"
+	@echo -e "$(GREEN)>>> Build Complete: $(DIST_DIR)/OpenTranscriber/OpenTranscriber$(EXE_EXT)$(NC)"

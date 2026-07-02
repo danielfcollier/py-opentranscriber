@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
+import os
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -211,9 +214,19 @@ class _NumpyEncoder(json.JSONEncoder):
 
 
 def checkpoint_path(file_path: str) -> Path:
-    """Return the checkpoint file path for a given input file."""
+    """Return the checkpoint file path for a given input file.
+
+    Falls back to a location under the system temp dir when the input's
+    directory isn't writable (e.g. Program Files, a locked network share).
+    """
     p = Path(file_path).resolve()
-    return p.with_name(p.name + ".checkpoint.json")
+    if os.access(p.parent, os.W_OK):
+        return p.with_name(p.name + ".checkpoint.json")
+
+    digest = hashlib.sha256(str(p).encode("utf-8")).hexdigest()[:16]
+    fallback_dir = Path(tempfile.gettempdir()) / "opentranscriber_checkpoints"
+    fallback_dir.mkdir(parents=True, exist_ok=True)
+    return fallback_dir / f"{p.name}.{digest}.checkpoint.json"
 
 
 def save_checkpoint(

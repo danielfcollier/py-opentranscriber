@@ -104,11 +104,13 @@ jobs:
         # --collect-all is crucial for Whisper to work packaged.
         # --add-binary bundles FFmpeg so setup_ffmpeg_path() can find it at runtime.
         # --collect-all silero_vad bundles its packaged .jit/.onnx model files.
+        # --onedir (not --onefile): avoids extracting to a temp dir on every
+        # launch, which is both slow and a common trigger for AV false positives.
         run: |
-          uv run pyinstaller --noconfirm --onefile --windowed --name "OpenTranscriber" --collect-all whisper --collect-all silero_vad --add-binary "ffmpeg.exe;." src/opentranscriber/gui.py
+          uv run pyinstaller --noconfirm --onedir --windowed --name "OpenTranscriber" --collect-all whisper --collect-all silero_vad --add-binary "ffmpeg.exe;." src/opentranscriber/gui.py
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v6
         with:
           name: Windows-App
-          path: dist/OpenTranscriber.exe
+          path: dist/OpenTranscriber/
