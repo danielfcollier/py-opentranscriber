@@ -248,7 +248,7 @@ def save_checkpoint(
     }
     tmp = ckpt_path.with_suffix(".tmp")
     tmp.write_text(json.dumps(data, ensure_ascii=False, cls=_NumpyEncoder), encoding="utf-8")
-    tmp.rename(ckpt_path)
+    os.replace(tmp, ckpt_path)
 
 
 def resume_or_detect_and_chunk(
