@@ -108,7 +108,7 @@ jobs:
           uv run pyinstaller --noconfirm --onefile --windowed --name "OpenTranscriber" --collect-all whisper --collect-all silero_vad --add-binary "ffmpeg.exe;." src/opentranscriber/gui.py
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: Windows-App
           path: dist/OpenTranscriber.exe
